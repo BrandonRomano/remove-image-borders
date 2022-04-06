@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"image"
+	"image/png"
 	"log"
 	"os"
 	"path/filepath"
@@ -22,6 +24,14 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(images)
+
+	// Go through each image and strip their borders
+	for _, image := range images {
+		err = stripImageBorder(image)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 }
 
 // Returns the paths to all images in a particular directory
@@ -58,4 +68,31 @@ func getImagesInDirectory(directory string) ([]string, error) {
 		},
 	)
 	return imagePaths, err
+}
+
+//
+func stripImageBorder(path string) error {
+	fmt.Println("Strip Image Border:", path)
+
+	// TODO, this is hardcoded to PNG for now
+	image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
+
+	// Load the image
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Convert image into pixels array
+	pixels, err := getPixels(file)
+	if err != nil {
+		return err
+	}
+
+	// TODO: need to do the flood fill algorithm here
+	fmt.Println(pixels[0][0], pixels[0][1])
+	fmt.Println(pixels[0][0].distanceFrom(pixels[0][1]))
+
+	return nil
 }
