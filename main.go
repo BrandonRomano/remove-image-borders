@@ -13,6 +13,7 @@ import (
 // General script configuration
 var (
 	floodDistanceMax     = 10
+	maxBorderWidth       = 3
 	validImageExtensions = []string{"png", "jpg", "jpeg"}
 )
 
@@ -33,7 +34,6 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		return // TODO Remove, just want to do one loop for now
 	}
 }
 
@@ -93,9 +93,11 @@ func stripImageBorder(path string) error {
 		return err
 	}
 
-	// TODO: need to do the flood fill algorithm here
+	// Flood fill the top left pixel to unearth the border
 	floodFiller := NewFloodFiller(pixels)
 	floodFiller.fill(0, 0)
-	floodFiller.PrettyPrint()
+	borderDepth := CalculateBorderDepth(floodFiller.FillArray)
+	fmt.Println(borderDepth)
+
 	return nil
 }

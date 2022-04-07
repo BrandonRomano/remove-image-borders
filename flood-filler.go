@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 func NewFloodFiller(image [][]Pixel) *FloodFiller {
 	width := len(image[0])
 	height := len(image)
@@ -48,18 +44,5 @@ func (f *FloodFiller) fill(y int, x int) {
 	// Fill Right if there is a pixel to the right, it hasn't been visited yet, and if it is within our fill tolerance
 	if x < f.ImageWidth-1 && f.FillArray[y][x+1] != true && f.Image[y][x].distanceFrom(f.Image[y][x+1]) <= floodDistanceMax {
 		f.fill(y, x+1)
-	}
-}
-
-func (f *FloodFiller) PrettyPrint() {
-	for _, row := range f.FillArray {
-		for _, val := range row {
-			if val {
-				fmt.Print("1")
-			} else {
-				fmt.Print("0")
-			}
-		}
-		fmt.Println("")
 	}
 }
