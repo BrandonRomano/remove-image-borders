@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"image"
+	"image/jpeg"
 	"image/png"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -73,14 +75,15 @@ func getImagesInDirectory(directory string) ([]string, error) {
 	return imagePaths, err
 }
 
-//
 func stripImageBorder(path string) error {
-	fmt.Println("Strip Image Border:", path)
+	// Load up the proper image format
+	if strings.HasSuffix(path, "png") {
+		image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
+	} else {
+		image.RegisterFormat("jpeg", "jpeg", jpeg.Decode, jpeg.DecodeConfig)
+	}
 
-	// TODO, this is hardcoded to PNG for now
-	image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
-
-	// Load the image
+	// Load the image file
 	file, err := os.Open(path)
 	if err != nil {
 		return err
@@ -96,8 +99,19 @@ func stripImageBorder(path string) error {
 	// Flood fill the top left pixel to unearth the border
 	floodFiller := NewFloodFiller(pixels)
 	floodFiller.fill(0, 0)
-	borderDepth := CalculateBorderDepth(floodFiller.FillArray)
-	fmt.Println(borderDepth)
 
+	// Take the result array of our floodFilter and calculate our border depth
+	borderDepth := CalculateBorderDepth(floodFiller.FillArray)
+	if borderDepth > 0 {
+		fmt.Println("Removing borders from file", path)
+
+		newWidth := floodFiller.ImageWidth - (borderDepth * 2)
+		newHeight := floodFiller.ImageHeight - (borderDepth * 2)
+		cmd := exec.Command("convert", path, "-gravity", "center", "-crop", fmt.Sprintf("%vx%v+0+0", newWidth, newHeight), path)
+		err := cmd.Run()
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
