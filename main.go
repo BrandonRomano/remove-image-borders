@@ -11,7 +11,10 @@ import (
 )
 
 // General script configuration
-var validImageExtensions = []string{"png", "jpg", "jpeg"}
+var (
+	floodDistanceMax     = 10
+	validImageExtensions = []string{"png", "jpg", "jpeg"}
+)
 
 func main() {
 	// Pull out the specified directory which contains
@@ -23,7 +26,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(images)
 
 	// Go through each image and strip their borders
 	for _, image := range images {
@@ -31,6 +33,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		return // TODO Remove, just want to do one loop for now
 	}
 }
 
@@ -91,8 +94,8 @@ func stripImageBorder(path string) error {
 	}
 
 	// TODO: need to do the flood fill algorithm here
-	fmt.Println(pixels[0][0], pixels[0][1])
-	fmt.Println(pixels[0][0].distanceFrom(pixels[0][1]))
-
+	floodFiller := NewFloodFiller(pixels)
+	floodFiller.fill(0, 0)
+	floodFiller.PrettyPrint()
 	return nil
 }
